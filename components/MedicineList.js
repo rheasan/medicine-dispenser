@@ -20,7 +20,7 @@ const MedicineList = () => {
 
     return (
         <ScrollView style={styles.mainContainer}>
-            <Header heading="Medicines"/>
+            {/* <Header heading="Medicines"/> */}
             {medicineList.map((elem, index) => {
                 return (
                     <View key={index} style={styles.dataContainer}>
