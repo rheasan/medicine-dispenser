@@ -1,11 +1,14 @@
 import React from "react";
-import {View, StyleSheet, Text} from "react-native";
+import {View, StyleSheet, Text, TouchableOpacity} from "react-native";
 
 
-const Home = () => {
+
+const Home = ({navigation}) => {
     return (
         <View style={styles.mainContainer}>
-            <Text style={styles.heading}>Home</Text>
+            <TouchableOpacity onPress={()=> navigation.navigate("Medicine List")} style={styles.medicineListContainer}>
+                <Text>View Medicine List</Text>
+            </TouchableOpacity>
         </View>
     )
 }
@@ -18,8 +21,10 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    heading: {
-        fontSize: 30
+    medicineListContainer: {
+        backgroundColor: "#000",
+        padding: 20,
+        borderRadius: 7,
     }
 });
 
