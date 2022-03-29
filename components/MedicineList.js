@@ -1,25 +1,57 @@
 import React from "react";
-import {View, Text, ScrollView, StyleSheet, Button, TouchableHighlight} from "react-native";
+import {View, Text, ScrollView, StyleSheet, Button, TouchableHighlight, TextInput} from "react-native";
 import { useState } from "react";
-
-import Header from "./Header";
-
+import DatePicker from 'react-native-date-picker'
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 
 const MedicineList = () => {
     let [medicineList, setMedicineList] = useState(testData);
+    let [showForm, setShowForm] = useState(false);
+    let [showMedicines, setShowMedicines] = useState(true);
+    let [medicineName, setMedicineName] = useState('');
+    let [medicineTime, setMedicineTime] = useState(new Date());
+    let [open, setOpen] = useState(false);
 
-    const updateMedicine = (key) => {
-        const oldList = medicineList;
-        let newList = oldList.filter((elem)=>(elem.name != key));
-        setMedicineList(newList);
-        //console.log(key);
+    //mode = 1 => add new key to state
+    //mode = 0 => remove key form state
+    const updateMedicine = (key, mode) => {
+        if(mode === 0){
+            const oldList = [...medicineList];
+            let newList = oldList.filter((elem)=>(elem.name != key.name || elem.time != key.time));
+            setMedicineList(newList);
+        }
+        if(mode == 1){
+            let oldList = [...medicineList];
+            if(key.name != ''){
+                oldList.push(key);
+                setMedicineList(oldList);
+                showMedicineForm(showForm);
+            }
+            else{
+                showMedicineForm(!showForm);
+            }
+        }
+    }
+    
+    //!should probably find a better way of doing this
+    const showMedicineForm = (state) => {
+        setShowForm(!state);
+        setShowMedicines(state);
+    }
+    
+    const getTime = (date) => {
+        return `${date.getHours()}:${String(date.getMinutes()).length == 1 ? "0"+ String(date.getMinutes()) : date.getMinutes()}`;
     }
 
-
+    const onTimeChange = (e, time) =>{
+        const curTime = time;
+        setMedicineTime(curTime);
+    }
 
     return (
-        <ScrollView style={styles.mainContainer}>
+        <>
+        <ScrollView style={showMedicines ? styles.visibleMainContainer: styles.invisibleMainContainer}>
             {/* <Header heading="Medicines"/> */}
             {medicineList.map((elem, index) => {
                 return (
@@ -29,7 +61,7 @@ const MedicineList = () => {
                             <Text style={styles.text}>Time: {elem.time}</Text>
                         </View>
                         {/* <Button title="-" style={styles.delButton} onPress={()=>updateMedicine(elem.name)} color="#992012"/> */}
-                        <TouchableHighlight onPress={()=>updateMedicine(elem.name)}>
+                        <TouchableHighlight onPress={()=>updateMedicine({name:elem.name, time: elem.time},0)}>
                             <View style={styles.delButton}>
                                 <Text style={styles.delButtonText}>Remove</Text>
                             </View>
@@ -37,19 +69,51 @@ const MedicineList = () => {
                     </View>
                 )
             })}
+            <View style={styles.dataContainer}>
+                <TouchableHighlight style={styles.addMedicine} onPress={()=>showMedicineForm(showForm)}>
+                    <Text style={styles.addMedicineText}>Add new medicine</Text>
+                </TouchableHighlight>
+            </View>
         </ScrollView>
+        <View style={showForm ? styles.visibleMedicineForm : styles.invisibleMedicineForm}>
+            <TextInput value={medicineName} onChangeText={setMedicineName} placeholder="Medicine Name" style={styles.input}></TextInput>
+            <TouchableHighlight style={styles.showTimePicker} onPress={()=>setOpen(true)}>
+                <Text style={styles.addMedicineText}>Select Time</Text>
+            </TouchableHighlight>
+                <DatePicker
+                modal
+                open={open}
+                date={medicineTime}
+                onConfirm={(date) => {
+                    setOpen(false)
+                    setMedicineTime(date)
+                }}
+                onCancel={() => {
+                    setOpen(false)
+                }}
+                mode="time"
+            />
+            <Text style={styles.showSelectedTime}>Current Selected Time: {getTime(medicineTime)}</Text>
+            <TouchableOpacity style={styles.addMedicine}> 
+                <Text style={styles.addMedicineText} onPress={()=> {updateMedicine({name: medicineName, time: getTime(medicineTime)}, 1); setMedicineName('')}}>Add Medicine</Text>
+            </TouchableOpacity>
+        </View>
+        </>
     );
 }
 
 
 const styles = StyleSheet.create({
-    mainContainer: {
+    visibleMainContainer: {
         flex: 1,
         backgroundColor: "#121414",
         display: "flex",
         flexDirection: "column",
         height: "100%",
         width: "100%",
+    },
+    invisibleMainContainer: {
+        display: 'none',
     },
     dataContainer: {
         display: "flex",
@@ -86,7 +150,66 @@ const styles = StyleSheet.create({
     delButtonText: {
         fontSize: 10,
         color: "#fff",
-    }
+    },
+    addButton: {
+
+    },
+    addMedicine:{
+        fontSize: 20,
+        padding: 10,
+        margin: 15,
+        // height: 35,
+        width: 150,
+        backgroundColor: "#3df700",
+        borderRadius: 7,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center",
+    },
+    addMedicineText: {
+        fontSize: 15,
+        color: "#000",
+        margin: "auto",
+    },
+    visibleMedicineForm: {
+        flex: 1,
+        backgroundColor: "#121414",
+    },
+    invisibleMedicineForm: {
+        flex: 0,
+        display: "none",
+    },
+    input: {
+        borderWidth: 2,
+        borderColor: "#333",
+        padding: 10,
+        margin: 20,
+        borderRadius: 5,
+        fontSize: 18,
+    },
+    timeOpacity: {
+        color: '#85AEBE',
+        borderWidth: 1,
+        borderColor: '#2f5b78',
+        height: 40,
+        width: 80,
+        margin: 20,
+        padding: 10,
+        marginBottom: 2,
+    },
+    showSelectedTime: {
+        margin: 20,
+        fontSize: 18,
+        marginTop: 2,
+    },
+    showTimePicker: {
+        fontSize: 20,
+        padding: 10,
+        margin: 15,
+        borderRadius: 7,
+        width: 150,
+        backgroundColor: "#3df700",
+    },
 });
 
 const testData = [{name: "A", time: "12:00"}, {name: "B", time: "18:00"}, {name: "C", time: "20:00"}];
