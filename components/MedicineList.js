@@ -1,8 +1,8 @@
 import React from "react";
-import {View, Text, ScrollView, StyleSheet, Button, TouchableHighlight, TextInput} from "react-native";
+import {View, Text, ScrollView, StyleSheet, Button, TouchableHighlight, TextInput, TouchableOpacity} from "react-native";
 import { useState } from "react";
 import DatePicker from 'react-native-date-picker'
-import { TouchableOpacity } from "react-native-gesture-handler";
+
 
 
 const MedicineList = () => {
