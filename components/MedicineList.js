@@ -1,25 +1,36 @@
 import React from "react";
 import {View, Text, ScrollView, StyleSheet, Button, TouchableHighlight, TextInput, TouchableOpacity} from "react-native";
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import DatePicker from 'react-native-date-picker'
-
-
+import firestoreHandler from "../lib/firestoreHandler";
 
 const MedicineList = () => {
-    let [medicineList, setMedicineList] = useState(testData);
+    let [medicineList, setMedicineList] = useState([]);
     let [showForm, setShowForm] = useState(false);
     let [showMedicines, setShowMedicines] = useState(true);
     let [medicineName, setMedicineName] = useState('');
     let [medicineTime, setMedicineTime] = useState(new Date());
     let [open, setOpen] = useState(false);
 
+
+    const initialize = async ()=>{
+        const medicineData = await firestoreHandler.getAllDocs();
+        setMedicineList(medicineData);
+    }
+
+    useEffect(()=>{
+        initialize();
+    }, []);
+
+
     //mode = 1 => add new key to state
     //mode = 0 => remove key form state
-    const updateMedicine = (key, mode) => {
+    const updateMedicine = async (key, mode) => {
         if(mode === 0){
             const oldList = [...medicineList];
             let newList = oldList.filter((elem)=>(elem.name != key.name || elem.time != key.time));
             setMedicineList(newList);
+            await firestoreHandler.deleteDoc(key);
         }
         if(mode == 1){
             let oldList = [...medicineList];
@@ -27,6 +38,7 @@ const MedicineList = () => {
                 oldList.push(key);
                 setMedicineList(oldList);
                 showMedicineForm(showForm);
+                await firestoreHandler.addDoc(key);
             }
             else{
                 showMedicineForm(!showForm);
@@ -44,21 +56,16 @@ const MedicineList = () => {
         return `${date.getHours()}:${String(date.getMinutes()).length == 1 ? "0"+ String(date.getMinutes()) : date.getMinutes()}`;
     }
 
-    const onTimeChange = (e, time) =>{
-        const curTime = time;
-        setMedicineTime(curTime);
-    }
-
     return (
         <>
         <ScrollView style={showMedicines ? styles.visibleMainContainer: styles.invisibleMainContainer}>
             {/* <Header heading="Medicines"/> */}
-            {medicineList.map((elem, index) => {
+            {medicineList?.map((elem, index) => {
                 return (
                     <View key={index} style={styles.dataContainer}>
                         <View style={styles.medicineData}>
                             <Text style={styles.text}>{index+1}. {elem.name}</Text>
-                            <Text style={styles.text}>Time: {elem.time}</Text>
+                            <Text style={styles.text}>Time: {getTime(elem.time)}</Text>
                         </View>
                         {/* <Button title="-" style={styles.delButton} onPress={()=>updateMedicine(elem.name)} color="#992012"/> */}
                         <TouchableHighlight onPress={()=>updateMedicine({name:elem.name, time: elem.time},0)}>
@@ -95,9 +102,10 @@ const MedicineList = () => {
             />
             <Text style={styles.showSelectedTime}>Current Selected Time: {getTime(medicineTime)}</Text>
             <TouchableOpacity style={styles.addMedicine}> 
-                <Text style={styles.addMedicineText} onPress={()=> {updateMedicine({name: medicineName, time: getTime(medicineTime)}, 1); setMedicineName('')}}>Add Medicine</Text>
+                <Text style={styles.addMedicineText} onPress={()=> {updateMedicine({name: medicineName, time: medicineTime}, 1); setMedicineName('')}}>Add Medicine</Text>
             </TouchableOpacity>
         </View>
+        
         </>
     );
 }
@@ -211,7 +219,5 @@ const styles = StyleSheet.create({
         backgroundColor: "#3df700",
     },
 });
-
-const testData = [{name: "A", time: "12:00"}, {name: "B", time: "18:00"}, {name: "C", time: "20:00"}];
-
+const test = [{"name": "A", "time": new Date("2022-04-13T13:16:44.000Z")}, {"name": "B", "time": new Date("2022-04-13T14:16:44.000Z")}, {"name": "C", "time": new Date("2022-04-13T15:16:44.000Z")}]
 export default MedicineList;
