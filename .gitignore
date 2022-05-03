@@ -66,3 +66,6 @@ buck-out/
 android/*
 ios/*
 google-services.json
+return_datas.js
+signing_key.jks
+output-metadata.json

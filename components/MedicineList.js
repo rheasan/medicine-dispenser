@@ -65,7 +65,7 @@ const MedicineList = () => {
                     <View key={index} style={styles.dataContainer}>
                         <View style={styles.medicineData}>
                             <Text style={styles.text}>{index+1}. {elem.name}</Text>
-                            <Text style={styles.text}>Time: {elem.timeString}</Text>
+                            <Text style={styles.text}>Time: {getTime(new Date(elem.time))}</Text>
                         </View>
                         {/* <Button title="-" style={styles.delButton} onPress={()=>updateMedicine(elem.name)} color="#992012"/> */}
                         <TouchableHighlight onPress={()=>updateMedicine({name:elem.name, time: elem.time},0)}>
